@@ -2,12 +2,12 @@ import { styled } from 'styled-components';
 import Logo from './Logo';
 import Button from './Button';
 
-const Navbar = ({ openModal, minimal }) => {
+const Navbar = ({ minimal = true, openModal = () => {} }) => {
   const authToken = false;
 
   return (
     <Wrapper>
-      <Logo variant='contrasting' />
+      <Logo variant={minimal ? 'minimal' : 'contrasting'} />
       {!minimal && (
         <NavButton onClick={openModal}>
           {authToken ? 'Sign out' : 'Log in'}
