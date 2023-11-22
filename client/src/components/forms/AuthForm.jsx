@@ -2,19 +2,28 @@ import * as Form from '@radix-ui/react-form';
 import { useState } from 'react';
 import { styled } from 'styled-components';
 import Button from '../Button';
-import { FORM_TYPES } from '../../lib/constants';
+import { FORM_TYPES, PATHS } from '../../lib/constants';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const AuthForm = ({ type }) => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   if (!type) return;
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     try {
       if (type === FORM_TYPES.REGISTER) {
-        // register the user
+        await axios.post('http://localhost:8000/signup', {
+          email,
+          password,
+        });
+
+        navigate(PATHS.onboardingUsers);
       }
     } catch (error) {
       console.log(error);
@@ -25,7 +34,13 @@ const AuthForm = ({ type }) => {
     <FormRoot onSubmit={handleSubmit}>
       <FormField name='email'>
         <FormControl asChild>
-          <input type='email' required placeholder='Email' />
+          <input
+            type='email'
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            placeholder='Email'
+          />
         </FormControl>
         <FormMessage match='valueMissing' />
         <FormMessage match='typeMismatch'>
