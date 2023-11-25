@@ -1,12 +1,13 @@
 import { styled } from 'styled-components';
 import Logo from './Logo';
 import Button from './Button';
+import { NAVBAR_HEIGHT } from '../lib/constants';
 
 const Navbar = ({ minimal = true, openModal = () => {} }) => {
   const authToken = false;
 
   return (
-    <Wrapper>
+    <Wrapper navbarheight={NAVBAR_HEIGHT}>
       <Logo variant={minimal ? 'minimal' : 'contrasting'} />
       {!minimal && (
         <NavButton onClick={openModal}>
@@ -20,7 +21,7 @@ const Navbar = ({ minimal = true, openModal = () => {} }) => {
 const Wrapper = styled.nav`
   display: flex;
   padding-left: 24px;
-  height: 70px;
+  height: ${({ navbarheight }) => navbarheight + 'px'};
   align-items: center;
   justify-content: space-between;
 `;

@@ -2,34 +2,51 @@ import { styled } from 'styled-components';
 import ChatContainer from '../components/ChatContainer';
 import { useState } from 'react';
 import TinderCard from 'react-tinder-card';
+import { useGetGenderedUsersQuery } from '../lib/queries/useGetGenderedUsersQuery';
+import { useCookies } from 'react-cookie';
+import { useUserContext } from '../providers/UserContext';
+import Loader from '../components/Loader';
 
 const chars = [
   { name: 'Richard Hendircks', url: 'https://i.imgur.com/oPj4A8u.jpeg' },
   { name: 'Erlich Bachman', url: 'https://i.imgur.com/oPj4A8u.jpeg' },
 ];
 
-const Dashboard = () => {
+const DashboardPage = () => {
   const [lastDirection, setLastDirection] = useState();
+  const { user } = useUserContext();
 
-  const swiped = (direction, nameToDelete) => {
+  const { genderedUsers, genderedUsersErrorMsg, isGenderedUsersPending } =
+    useGetGenderedUsersQuery({ gender: user?.gender_interest });
+
+  const handleSwiped = (direction, nameToDelete) => {
     console.log('removing' + nameToDelete);
     setLastDirection(direction);
   };
 
-  const outOfFrame = (name) => {
+  const handleOutOfFrame = (name) => {
     console.log(name + 'left the screen!');
   };
+
+  if (isGenderedUsersPending) {
+    return <Loader />;
+  }
+
+  // TODO: create a <Message /> component with different variants to use for error messages
+  if (genderedUsersErrorMsg) {
+    return <p>There was an error fetching gendered users</p>;
+  }
 
   return (
     <Wrapper>
       <ChatContainer />
       <SwiperWrapper>
         <CardWrapper>
-          {chars.map((char) => (
+          {genderedUsers.map((char) => (
             <TinderCardWrapper
               key={chars.name}
-              onSwipe={(dir) => swiped(dir, char.name)}
-              onCardLeftScreen={() => {}}
+              onSwipe={(dir) => handleSwiped(dir, char.name)}
+              onCardLeftScreen={handleOutOfFrame}
             >
               <Card style={{ backgroundImage: 'url(' + char.url + ')' }}>
                 <h3>{char.name}</h3>
@@ -86,4 +103,4 @@ const TinderCardWrapper = styled(TinderCard)`
   position: absolute;
 `;
 
-export default Dashboard;
+export default DashboardPage;

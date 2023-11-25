@@ -1,15 +1,30 @@
 import { styled } from 'styled-components';
 import Button from './Button';
+import { useUserContext } from '../providers/UserContext';
+import { useCookies } from 'react-cookie';
+import fallbackProfilePic from '/fallback_profile_photo.jpeg';
 
 const ChatHeader = () => {
+  const [cookies, removeCookie] = useCookies([['user']]);
+  const { first_name: firstName = '', url = '' } = useUserContext();
+
+  const handleLogout = () => {
+    removeCookie('UserId', cookies.userId);
+    removeCookie('AuthToken', cookies.AuthToken);
+    window.location.reload();
+  };
+
   return (
     <Wrapper>
       <ProfileWrapper>
         <ImageWrapper>
-          <Image src='' />
+          <Image
+            src={url || fallbackProfilePic}
+            alt={`photo of ${firstName}`}
+          />
         </ImageWrapper>
-        <h3>UserName</h3>
-        <LogoutIcon LogoutIcon>{'<-'}</LogoutIcon>
+        <h3>{firstName}</h3>
+        <LogoutIcon onClick={handleLogout}>{'<-'}</LogoutIcon>
       </ProfileWrapper>
     </Wrapper>
   );
@@ -30,7 +45,7 @@ const ProfileWrapper = styled.div`
   color: rgb(255, 255, 255);
 `;
 
-const LogoutIcon = styled.i`
+const LogoutIcon = styled(Button)`
   display: flex;
   align-items: center;
   padding: 20px;

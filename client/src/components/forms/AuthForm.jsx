@@ -2,13 +2,15 @@ import * as Form from '@radix-ui/react-form';
 import { useState } from 'react';
 import { styled } from 'styled-components';
 import Button from '../Button';
-import { FORM_TYPES, PATHS } from '../../lib/constants';
+import { FORM_TYPES, PATHS, BASE_URL } from '../../lib/constants';
 import axios from 'axios';
+import { useCookies } from 'react-cookie';
 import { useNavigate } from 'react-router-dom';
 
 const AuthForm = ({ type }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [_, setCookie] = useCookies();
   const navigate = useNavigate();
 
   if (!type) return;
@@ -17,13 +19,23 @@ const AuthForm = ({ type }) => {
     event.preventDefault();
 
     try {
-      if (type === FORM_TYPES.REGISTER) {
-        await axios.post('http://localhost:8000/signup', {
+      const response = await axios.post(
+        `${BASE_URL}${type === FORM_TYPES.REGISTER ? 'signup' : 'login'}`,
+        {
           email,
           password,
-        });
+        }
+      );
 
+      setCookie('AuthToken', response.data.token);
+      setCookie('UserId', response.data.userId);
+
+      if (type === FORM_TYPES.REGISTER) {
+        // On register
         navigate(PATHS.onboardingUsers);
+      } else {
+        // On login
+        navigate(PATHS.dashboard);
       }
     } catch (error) {
       console.log(error);
