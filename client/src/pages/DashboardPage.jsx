@@ -2,15 +2,9 @@ import { styled } from 'styled-components';
 import ChatContainer from '../components/ChatContainer';
 import { useState } from 'react';
 import TinderCard from 'react-tinder-card';
-import { useGetGenderedUsersQuery } from '../lib/queries/useGetGenderedUsersQuery';
-import { useCookies } from 'react-cookie';
-import { useUserContext } from '../providers/UserContext';
 import Loader from '../components/Loader';
-
-const chars = [
-  { name: 'Richard Hendircks', url: 'https://i.imgur.com/oPj4A8u.jpeg' },
-  { name: 'Erlich Bachman', url: 'https://i.imgur.com/oPj4A8u.jpeg' },
-];
+import { useGetGenderedUsersQuery } from '../lib/queries/useGetGenderedUsersQuery';
+import { useUserContext } from '../providers/UserContext';
 
 const DashboardPage = () => {
   const [lastDirection, setLastDirection] = useState();
@@ -42,17 +36,21 @@ const DashboardPage = () => {
       <ChatContainer />
       <SwiperWrapper>
         <CardWrapper>
-          {genderedUsers.map((char) => (
-            <TinderCardWrapper
-              key={chars.name}
-              onSwipe={(dir) => handleSwiped(dir, char.name)}
-              onCardLeftScreen={handleOutOfFrame}
-            >
-              <Card style={{ backgroundImage: 'url(' + char.url + ')' }}>
-                <h3>{char.name}</h3>
-              </Card>
-            </TinderCardWrapper>
-          ))}
+          {genderedUsers
+            .filter((genderedUser) => genderedUser.url)
+            .map((genderedUser) => (
+              <TinderCardWrapper
+                key={genderedUser.user_id}
+                onSwipe={(dir) => handleSwiped(dir, genderedUser.user_id)}
+                onCardLeftScreen={handleOutOfFrame}
+              >
+                <Card
+                  style={{ backgroundImage: 'url(' + genderedUser.url + ')' }}
+                >
+                  <h3>{genderedUser.user_id}</h3>
+                </Card>
+              </TinderCardWrapper>
+            ))}
           <SwipeInfo>
             {lastDirection && <p>You swiped {lastDirection}</p>}
           </SwipeInfo>

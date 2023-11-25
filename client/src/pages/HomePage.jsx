@@ -5,7 +5,7 @@ import Modal from '../components/Modal';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import AuthForm from '../components/forms/AuthForm';
-import { PATHS, FORM_TYPES } from '../lib/constants';
+import { FORM_TYPES } from '../lib/constants';
 import Typography from '../components/Typography';
 
 const HomePage = () => {
@@ -30,16 +30,10 @@ const HomePage = () => {
       <Navbar openModal={handleOpenLoginFormModal} minimal={false} />
       <ContentWrapper>
         <SignupSectionWrapper>
-          <LandingHeading variant='h1'>Swipe Right</LandingHeading>
+          <LandingHeading variant='xl'>Swipe Right</LandingHeading>
           <Button variant='accent' onClick={handleOpenRegisterFormModal}>
             {userInfo ? 'Sign out' : 'Create Account'}
           </Button>
-          <SubtitleSpan>
-            Already have an account?{' '}
-            <LoginButton to={PATHS.login} onClick={handleOpenLoginFormModal}>
-              Login
-            </LoginButton>
-          </SubtitleSpan>
         </SignupSectionWrapper>
         {createPortal(
           <Modal
@@ -95,17 +89,6 @@ const SignupSectionWrapper = styled.div`
 
   /* SAME VALUE AS THE HEIGHT OF THE NAVBAR TO MAKE SURE THIS IS CENTERED ON THE PAGE */
   margin-bottom: 70px;
-`;
-
-const SubtitleSpan = styled.span`
-  font-size: 13px;
-  color: ${({ theme }) => theme.palette.white};
-`;
-
-const LoginButton = styled(Button)`
-  font-style: italic;
-  padding: 0px;
-  color: #fe3072;
 `;
 
 export default HomePage;

@@ -13,9 +13,15 @@ const Typography = ({ variant = 'p', children, ...rest }) => {
 const Wrapper = styled.p`
   text-align: center;
   font-size: var(--fontSize);
+  letter-spacing: var(--letter-spacing);
+  line-height: var(--line-height);
 `;
 
 const VARIANTS = {
+  xl: {
+    '--fontSize': '99px',
+    '--letter-spacing': 1.7,
+  },
   h1: {
     '--fontSize': '50px',
   },

@@ -2,7 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import { PATHS } from './lib/constants';
 import App from './App';
 import { HomePage, DashboardPage, OnboardingUsersPage } from './pages';
-import ErrorNotFoundPage from './components/ErrorNotFoundPage';
+import ErrorNotFoundPage from './pages/ErrorNotFoundPage';
 
 export const router = createBrowserRouter([
   {

@@ -2,10 +2,11 @@ import * as Form from '@radix-ui/react-form';
 import { useState } from 'react';
 import { styled } from 'styled-components';
 import Button from '../Button';
-import { FORM_TYPES, PATHS, BASE_URL } from '../../lib/constants';
-import axios from 'axios';
+import { FORM_TYPES, PATHS } from '../../lib/constants';
+import Loader from '../Loader';
 import { useCookies } from 'react-cookie';
 import { useNavigate } from 'react-router-dom';
+import { useAuthenticateUserMutation } from '../../lib/queries/useAuthenticateUserMutation';
 
 const AuthForm = ({ type }) => {
   const [email, setEmail] = useState('');
@@ -13,34 +14,40 @@ const AuthForm = ({ type }) => {
   const [_, setCookie] = useCookies();
   const navigate = useNavigate();
 
-  if (!type) return;
+  const {
+    mutate: handleAuthenticateUser,
+    isSuccess,
+    isLoading,
+    data: { token, userId },
+    error,
+  } = useAuthenticateUserMutation();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
-    try {
-      const response = await axios.post(
-        `${BASE_URL}${type === FORM_TYPES.REGISTER ? 'signup' : 'login'}`,
-        {
-          email,
-          password,
-        }
-      );
-
-      setCookie('AuthToken', response.data.token);
-      setCookie('UserId', response.data.userId);
-
-      if (type === FORM_TYPES.REGISTER) {
-        // On register
-        navigate(PATHS.onboardingUsers);
-      } else {
-        // On login
-        navigate(PATHS.dashboard);
-      }
-    } catch (error) {
-      console.log(error);
-    }
+    handleAuthenticateUser();
   };
+
+  if (!type) {
+    console.error('Specifying an auth type is mandatory!');
+    return;
+  }
+
+  if (isSuccess) {
+    setCookie('AuthToken', token);
+    setCookie('UserId', userId);
+
+    if (type === FORM_TYPES.REGISTER) {
+      // On register
+      navigate(PATHS.onboardingUsers);
+    } else {
+      // On login
+      navigate(PATHS.dashboard);
+    }
+  }
+
+  if (error) {
+    return <p>{error}</p>;
+  }
 
   return (
     <FormRoot onSubmit={handleSubmit}>
@@ -99,7 +106,13 @@ const AuthForm = ({ type }) => {
       )}
       <Form.Submit asChild>
         <Button variant='accent'>
-          {type === FORM_TYPES.REGISTER ? 'Register' : 'Login'}
+          {isLoading ? (
+            <Loader />
+          ) : type === FORM_TYPES.REGISTER ? (
+            'Register'
+          ) : (
+            'Login'
+          )}
         </Button>
       </Form.Submit>
     </FormRoot>
