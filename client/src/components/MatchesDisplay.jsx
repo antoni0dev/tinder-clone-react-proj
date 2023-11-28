@@ -4,7 +4,7 @@ import { useGetMatchesQuery } from '../lib/queries/useGetMatchesQuery';
 import Loader from './Loader';
 
 const MatchesDisplay = ({ onUserClick }) => {
-  const { matchedUserIds } = useUserContext();
+  const { user, matchedUserIds } = useUserContext();
 
   const {
     data: matchedProfiles = [],
@@ -13,6 +13,10 @@ const MatchesDisplay = ({ onUserClick }) => {
   } = useGetMatchesQuery({
     matchedUserIds,
   });
+
+  const filteredMatchedProfiles = matchedProfiles.filter((matchedProfile) =>
+    matchedProfile.matches.some((profile) => profile.user_id === user.user_id)
+  );
 
   if (error) {
     return <p>{error}</p>;
@@ -24,7 +28,7 @@ const MatchesDisplay = ({ onUserClick }) => {
 
   return (
     <Wrapper>
-      {matchedProfiles.map((matchedProfile) => {
+      {filteredMatchedProfiles.map((matchedProfile) => {
         return (
           <MatchCard
             key={matchedProfile.user_id}

@@ -231,8 +231,8 @@ app.get('/users', async (req, res) => {
       },
     ];
 
-    const foundUsers = users.aggregate(pipeline).toArray();
-    res.send(foundUsers);
+    const foundUsers = await users.aggregate(pipeline).toArray();
+    res.json(foundUsers);
   } catch (err) {
     console.log(err);
     res.status(500).send('An error ocurred');

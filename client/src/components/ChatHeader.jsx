@@ -6,12 +6,11 @@ import fallbackProfilePic from '/fallback_profile_photo.jpeg';
 
 const ChatHeader = () => {
   const [cookies, removeCookie] = useCookies([['user']]);
-  const { first_name: firstName = '', url = '' } = useUserContext();
+  const { user } = useUserContext();
 
   const handleLogout = () => {
-    removeCookie('UserId', cookies.userId);
+    removeCookie('UserId', cookies.UserId);
     removeCookie('AuthToken', cookies.AuthToken);
-    window.location.reload();
   };
 
   return (
@@ -19,11 +18,11 @@ const ChatHeader = () => {
       <ProfileWrapper>
         <ImageWrapper>
           <Image
-            src={url || fallbackProfilePic}
-            alt={`photo of ${firstName}`}
+            src={user.url || fallbackProfilePic}
+            alt={`photo of ${user.url}`}
           />
         </ImageWrapper>
-        <h3>{firstName}</h3>
+        <h3>{user.first_name}</h3>
         <LogoutIcon onClick={handleLogout}>{'<-'}</LogoutIcon>
       </ProfileWrapper>
     </Wrapper>

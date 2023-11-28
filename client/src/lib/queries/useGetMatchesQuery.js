@@ -3,10 +3,10 @@ import { parseAxiosError } from '../utils';
 import axios from 'axios';
 import { BASE_URL } from '../constants';
 
-export const useGetMatchesQuery = () =>
+export const useGetMatchesQuery = ({ matchedUserIds }) =>
   useQuery({
     queryKey: ['matches'],
-    queryFn: async ({ matchedUserIds }) => {
+    queryFn: async () => {
       try {
         const response = await axios.get(`${BASE_URL}users`, {
           params: {
