@@ -5,10 +5,9 @@ import { CheckIcon } from '@radix-ui/react-icons';
 import { styled } from 'styled-components';
 import { useState } from 'react';
 import Button from '../Button';
-import axios from 'axios';
-import { BASE_URL, NAVBAR_HEIGHT, PATHS } from '../../lib/constants';
-import { useNavigate } from 'react-router-dom';
-import { isValidUrl } from '../../lib/utils';
+import { NAVBAR_HEIGHT } from '../../lib/constants';
+import { isAnyKeyEmpty, isValidUrl } from '../../lib/utils';
+import { useAddUserOnboarding } from '../../lib/queries/useAddUserOnboarding';
 
 const OnboardingForm = ({ userId }) => {
   const [formData, setFormData] = useState({
@@ -22,10 +21,12 @@ const OnboardingForm = ({ userId }) => {
     showGender: false,
     interest: '',
     matches: [],
-    url: 'https://i.imgur.com/oPj4A8u.jpeg',
+    url: '',
   });
 
-  const navigate = useNavigate();
+  const isFormIncomplete = isAnyKeyEmpty(formData);
+
+  const { mutate: performUserOnboarding, isPending } = useAddUserOnboarding();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target ?? e;
@@ -34,17 +35,11 @@ const OnboardingForm = ({ userId }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    try {
-      await axios.put(`${BASE_URL}user`, { formData });
-      navigate(PATHS.dashboard);
-    } catch (err) {
-      console.log(err);
-    }
+    performUserOnboarding({ formData });
   };
 
   return (
-    <FormRoot navbarheight={NAVBAR_HEIGHT}>
+    <FormRoot onSubmit={handleSubmit} navbarheight={NAVBAR_HEIGHT}>
       <Wrapper>
         <FormWrapper>
           <Form.Field name='firstName'>
@@ -106,6 +101,7 @@ const OnboardingForm = ({ userId }) => {
             <FormLabel>Gender</FormLabel>
             <Form.Control asChild>
               <RadioGroupRoot
+                required
                 value={formData.gender}
                 onValueChange={(value) =>
                   handleInputChange({ value, name: 'gender' })
@@ -139,6 +135,7 @@ const OnboardingForm = ({ userId }) => {
           <CheckboxFormField>
             <FormLabel>Show gender on my profile</FormLabel>
             <CheckboxRoot
+              required
               checked={formData.showGender}
               onCheckedChange={(value) =>
                 setFormData({ ...formData, showGender: value })
@@ -153,6 +150,7 @@ const OnboardingForm = ({ userId }) => {
             <FormLabel>Interested in</FormLabel>
             <Form.Control asChild>
               <RadioGroupRoot
+                required
                 value={formData.interest}
                 onValueChange={(value) =>
                   handleInputChange({ value, name: 'interest' })
@@ -199,7 +197,7 @@ const OnboardingForm = ({ userId }) => {
         </FormWrapper>
         <div>
           <Form.Field name='url'>
-            <FormLabel>Add Profile Picture</FormLabel>
+            <FormLabel>Add Profile Picture URL</FormLabel>
             <Form.Control asChild>
               <TextInput
                 type='url'
@@ -208,6 +206,8 @@ const OnboardingForm = ({ userId }) => {
                 value={formData.url}
               />
             </Form.Control>
+            <FormMessage match='valueMissing' />
+            <FormMessage match='typeMismatch' />
           </Form.Field>
           {isValidUrl(formData.url) && (
             <ProfileImg src={formData.url} alt='profile user pic' />
@@ -215,7 +215,7 @@ const OnboardingForm = ({ userId }) => {
         </div>
       </Wrapper>
       <Form.Submit asChild>
-        <SubmitButton variant='accent' onClick={handleSubmit}>
+        <SubmitButton disabled={isPending || isFormIncomplete} variant='accent'>
           Submit
         </SubmitButton>
       </Form.Submit>
@@ -233,12 +233,14 @@ const FormRoot = styled(Form.Root)`
 
 const Wrapper = styled.div`
   display: flex;
+  min-height: 500px;
   justify-content: center;
   gap: 25px;
 `;
 
 const FormWrapper = styled.div`
   display: flex;
+  height: 580px;
   flex-direction: column;
   justify-content: space-between;
 `;
@@ -352,7 +354,8 @@ const CheckboxRoot = styled(Checkbox.Root)`
 
 const ProfileImg = styled.img`
   width: 100%;
-  max-height: 500px;
+  height: 500px;
+  max-width: 800px;
   border-radius: 8px;
   margin-top: 35px;
   object-fit: cover;

@@ -53,6 +53,7 @@ app.post('/signup', async (req, res) => {
     res.status(201).json({ token, userId: generatedUserId });
   } catch (err) {
     console.log(err);
+    err.status(500).send('An error ocurred');
   } finally {
     await client.close();
   }
@@ -68,19 +69,26 @@ app.post('/login', async (req, res) => {
     const users = database.collection('users');
 
     const user = await users.findOne({ email });
+
+    if (!user) {
+      res.status(401).send('User not found!');
+      return;
+    }
+
     const isPasswordCorrect = await bcrypt.compare(
       password,
       user.hashed_password
     );
 
-    if (user && isPasswordCorrect) {
+    if (isPasswordCorrect) {
       const token = jwt.sign(user, email, { expiresIn: 60 * 24 });
       res.status(201).json({ token, userId: user.user_id });
+    } else {
+      res.status(401).send('Invalid credentials');
     }
-
-    res.status(400).send('Invalid Credentials');
   } catch (err) {
     console.log(err);
+    res.status(500).send('An error ocurred');
   } finally {
     await client.close();
   }
@@ -98,6 +106,8 @@ app.get('/user', async (req, res) => {
     const query = { user_id: userId };
     const user = await users.findOne(query);
     res.send(user);
+  } catch (err) {
+    err.status(500).send('An error ocurred');
   } finally {
     await client.close();
   }
@@ -113,6 +123,9 @@ app.get('/users', async (req, res) => {
 
     const returnedUsers = await users.find().toArray();
     res.send(returnedUsers);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('An error ocurred.');
   } finally {
     await client.close();
   }
@@ -130,6 +143,9 @@ app.get('/gendered-users', async (req, res) => {
     const query = { gender_identity: { $eq: gender } };
     const foundUsers = await users.find(query).toArray();
     res.json(foundUsers);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('An error ocurred');
   } finally {
     await client.close();
   }
@@ -166,6 +182,104 @@ app.put('/user', async (req, res) => {
     res.send(insertedUser);
   } catch (err) {
     console.log(err);
+    res.status(500).send('An error ocurred');
+  } finally {
+    await client.close();
+  }
+});
+
+app.put('/addmatch', async (req, res) => {
+  const client = new MongoClient();
+  const { userId, matchedUserId } = req.body;
+
+  try {
+    await client.connect();
+    const database = client.db('app');
+    const users = database.collection('users');
+
+    const query = { user_id: userId };
+    const updateDocument = {
+      $push: { matches: { user_id: matchedUserId } },
+    };
+
+    const user = await users.updateOne(query, updateDocument);
+    res.send(user);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('An error ocurred');
+  } finally {
+    await client.close();
+  }
+});
+
+app.get('/users', async (req, res) => {
+  const client = new MongoClient();
+  const userIds = JSON.parse(req.query.userIds);
+
+  try {
+    await client.connect();
+    const database = client.db('app');
+    const users = database.collection('users');
+
+    const pipeline = [
+      {
+        $match: {
+          user_id: {
+            $in: userIds,
+          },
+        },
+      },
+    ];
+
+    const foundUsers = users.aggregate(pipeline).toArray();
+    res.send(foundUsers);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('An error ocurred');
+  } finally {
+    await client.close();
+  }
+});
+
+/* MESSAGES */
+
+app.get('/messages', async (req, res) => {
+  const client = new MongoClient(uri);
+  const { fromId, recipientId } = req.query;
+
+  try {
+    client.connect();
+    const database = client.db('app');
+    const messages = database.collection('messages');
+
+    const query = {
+      from_userId: fromId,
+      to_userId: recipientId,
+    };
+
+    const foundMessages = await messages.find(query).toArray();
+    res.send(foundMessages);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('An error occured');
+  } finally {
+    await client.close();
+  }
+});
+
+app.post('/message', async (req, res) => {
+  const client = new MongoClient(uri);
+  const message = req.body.message;
+
+  try {
+    client.connect();
+    const database = client.db('app');
+    const messages = database.collection('messages');
+    const insertedMessage = await messages.insertOne(message);
+    res.send(insertedMessage);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('An error occured');
   } finally {
     await client.close();
   }

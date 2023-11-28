@@ -8,7 +8,7 @@ export const isValidUrl = (url) => {
       '(\\#[-a-z\\d_]*)?$',
     'i'
   ); // fragment locator
-  return !!urlPattern.test(url);
+  return Boolean(urlPattern.test(url));
 };
 
 export const parseAxiosError = (error) => {
@@ -34,4 +34,14 @@ export const parseAxiosError = (error) => {
     default:
       return 'An unexpected error ocurred. Please try again later or contact customer service.';
   }
+};
+
+export const isAnyKeyEmpty = (obj) => {
+  for (let key in obj) {
+    if (!obj[key]) {
+      return true;
+    }
+  }
+
+  return false;
 };

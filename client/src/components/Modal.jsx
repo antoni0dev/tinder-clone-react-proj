@@ -7,8 +7,8 @@ const Modal = ({ title, children, isOpen, setIsOpen }) => {
       <Dialog.Portal>
         <DialogOverlay />
         <DialogContent>
-          <DialogTitle>{title && <h2>{title}</h2>}</DialogTitle>
-          <Dialog.Description>{children}</Dialog.Description>
+          <DialogTitle>{title}</DialogTitle>
+          <Dialog.Description asChild>{children}</Dialog.Description>
           <DialogCloseBtn>X</DialogCloseBtn>
         </DialogContent>
       </Dialog.Portal>

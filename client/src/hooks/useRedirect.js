@@ -4,7 +4,7 @@ import { useUserContext } from '../providers/UserContext';
 import { PATHS, PUBLIC_PATHS } from '../lib/constants';
 
 export const useRedirect = () => {
-  const { userId } = useUserContext();
+  const { isAuthenticated } = useUserContext();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -12,19 +12,17 @@ export const useRedirect = () => {
 
   useEffect(() => {
     // if authenticated trying to access public path
-    if (userId && PUBLIC_PATHS.includes(location.pathname)) {
+    if (isAuthenticated && PUBLIC_PATHS.includes(location.pathname)) {
       navigate(PATHS.dashboard, { replace: true });
-      return;
     }
 
     // if unauthenticated trying to access private path
-    if (!userId && !PUBLIC_PATHS.includes(location.pathname)) {
+    if (!isAuthenticated && !PUBLIC_PATHS.includes(location.pathname)) {
       navigate(PATHS.home, { replace: true });
-      return;
     }
 
     setIsLoading(false);
-  }, [location, navigate, userId]);
+  }, [location, navigate, isAuthenticated]);
 
   return isLoading;
 };

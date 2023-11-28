@@ -1,9 +1,8 @@
 import * as Form from '@radix-ui/react-form';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { styled } from 'styled-components';
 import Button from '../Button';
 import { FORM_TYPES, PATHS } from '../../lib/constants';
-import Loader from '../Loader';
 import { useCookies } from 'react-cookie';
 import { useNavigate } from 'react-router-dom';
 import { useAuthenticateUserMutation } from '../../lib/queries/useAuthenticateUserMutation';
@@ -17,36 +16,34 @@ const AuthForm = ({ type }) => {
   const {
     mutate: handleAuthenticateUser,
     isSuccess,
-    isLoading,
-    data: { token, userId },
+    isPending,
+    data,
     error,
   } = useAuthenticateUserMutation();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    handleAuthenticateUser();
+    handleAuthenticateUser({ authType: type, data: { email, password } });
   };
+
+  useEffect(() => {
+    if (isSuccess) {
+      setCookie('AuthToken', data.token);
+      setCookie('UserId', data.userId);
+
+      if (type === FORM_TYPES.REGISTER) {
+        // On register
+        navigate(PATHS.onboardingUsers);
+      } else {
+        // On login
+        navigate(PATHS.dashboard);
+      }
+    }
+  }, [isSuccess, navigate, setCookie, data, type]);
 
   if (!type) {
     console.error('Specifying an auth type is mandatory!');
     return;
-  }
-
-  if (isSuccess) {
-    setCookie('AuthToken', token);
-    setCookie('UserId', userId);
-
-    if (type === FORM_TYPES.REGISTER) {
-      // On register
-      navigate(PATHS.onboardingUsers);
-    } else {
-      // On login
-      navigate(PATHS.dashboard);
-    }
-  }
-
-  if (error) {
-    return <p>{error}</p>;
   }
 
   return (
@@ -54,6 +51,7 @@ const AuthForm = ({ type }) => {
       <FormField name='email'>
         <FormControl asChild>
           <input
+            disabled={isPending}
             type='email'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -68,6 +66,7 @@ const AuthForm = ({ type }) => {
       </FormField>
       <FormField name='password'>
         <FormControl
+          disabled={isPending}
           type='password'
           required
           minLength='8'
@@ -91,6 +90,7 @@ const AuthForm = ({ type }) => {
       {type === FORM_TYPES.REGISTER && (
         <FormField name='confirm-password'>
           <FormControl
+            disabled={isPending}
             type='password'
             required
             min='8'
@@ -98,23 +98,17 @@ const AuthForm = ({ type }) => {
             placeholder='Confirm password'
           />
           <FormMessage match='valueMissing' />
-
           <FormMessage match={(value) => value !== password}>
             Passwords do not match!
           </FormMessage>
         </FormField>
       )}
       <Form.Submit asChild>
-        <Button variant='accent'>
-          {isLoading ? (
-            <Loader />
-          ) : type === FORM_TYPES.REGISTER ? (
-            'Register'
-          ) : (
-            'Login'
-          )}
+        <Button disabled={isPending} variant='accent'>
+          {type === FORM_TYPES.REGISTER ? 'Register' : 'Login'}
         </Button>
       </Form.Submit>
+      <p style={{ color: '#ff3333' }}>{error}</p>
     </FormRoot>
   );
 };
@@ -132,7 +126,7 @@ const FormField = styled(Form.Field)`
 `;
 
 const FormControl = styled(Form.Control)`
-  padding: 5px 8px;
+  padding: 4px 12px;
   width: 100%;
   border-radius: 12px;
   border: none;

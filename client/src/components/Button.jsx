@@ -32,6 +32,11 @@ const Wrapper = styled.button`
     background: var(--hoverBackground);
     cursor: pointer;
   }
+
+  &:disabled {
+    background: #bebebe;
+    color: #494444;
+  }
 `;
 
 export default Button;

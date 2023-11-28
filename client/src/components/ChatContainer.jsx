@@ -2,18 +2,33 @@ import { styled } from 'styled-components';
 import MatchesDisplay from './MatchesDisplay';
 import ChatHeader from './ChatHeader';
 import ChatDisplay from './ChatDisplay';
+import { useState } from 'react';
 
 const ChatContainer = () => {
+  const [clickedUser, setClickedUser] = useState(null);
+  const handleUserClick = (matchedProfile) => setClickedUser(matchedProfile);
+  const handleRemoveClickedUser = () => setClickedUser(null);
+
   return (
     <Wrapper>
       <ChatHeader />
-      <div>
-        <OptionButton>Matches</OptionButton>
-        <OptionButton>Chat</OptionButton>
-      </div>
+      <nav>
+        <OptionButton
+          is_active={Boolean(!clickedUser).toString()}
+          onClick={handleRemoveClickedUser}
+        >
+          Matches
+        </OptionButton>
+        <OptionButton
+          is_active={Boolean(clickedUser).toString()}
+          disabled={!clickedUser}
+        >
+          Chat
+        </OptionButton>
+      </nav>
 
-      <MatchesDisplay />
-      <ChatDisplay />
+      {!clickedUser && <MatchesDisplay onUserClick={handleUserClick} />}
+      {clickedUser && <ChatDisplay clickedUser={clickedUser} />}
     </Wrapper>
   );
 };
@@ -24,15 +39,20 @@ const Wrapper = styled.div`
     rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
   width: 30%;
   text-align: left;
-  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
 `;
 
 const OptionButton = styled.button`
   border: none;
   background-color: rgb(255, 255, 255);
-  border-bottom: solid 4px rgb(243, 33, 33);
+  cursor: pointer;
+  border-bottom: ${({ is_active }) =>
+    is_active ? 'solid 4px rgb(243, 33, 33)' : 'solid 4px rgb(187, 187, 187)'};
+  color: ${({ is_active }) => !is_active && '#dcdcdc'};
   font-size: 20px;
-  margin: 2px;
+  margin: px;
   padding: 10px;
 
   &:disabled {

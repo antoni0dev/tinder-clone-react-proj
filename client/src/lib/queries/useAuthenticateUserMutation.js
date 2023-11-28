@@ -14,10 +14,8 @@ export const useAuthenticateUserMutation = () => {
 
         return response.data;
       } catch (err) {
-        throw new Error(parseAxiosError(err));
+        throw parseAxiosError(err);
       }
     },
-    onSuccess: ({ token, userId }) => ({ token, userId }),
-    onError: (error) => parseAxiosError(error),
   });
 };

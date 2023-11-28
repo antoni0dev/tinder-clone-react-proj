@@ -3,8 +3,8 @@ import axios from 'axios';
 import { BASE_URL } from '../constants';
 import { parseAxiosError } from '../utils';
 
-export const useGetGenderedUsersQuery = ({ gender }) => {
-  const { data, error, isPending } = useQuery({
+export const useGetGenderedUsersQuery = ({ gender, enabled }) => {
+  return useQuery({
     queryKey: ['genderedUsers', gender],
     queryFn: async () => {
       try {
@@ -16,11 +16,6 @@ export const useGetGenderedUsersQuery = ({ gender }) => {
         throw new Error(parseAxiosError(err));
       }
     },
+    enabled: enabled,
   });
-
-  return {
-    genderedUsers: data,
-    genderedUsersErrorMsg: error,
-    isGenderedUsersPending: isPending,
-  };
 };
