@@ -7,7 +7,7 @@ import Loader from '../components/Loader';
 const UserContext = createContext(null);
 
 const UserContextProvider = ({ children }) => {
-  const [cookies] = useCookies(['UserId']);
+  const [cookies] = useCookies(['UserId', 'AuthToken']);
   const userId = cookies.UserId !== 'undefined' ? cookies.UserId : undefined;
 
   const {
